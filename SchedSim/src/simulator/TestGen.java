@@ -12,7 +12,7 @@ import org.json.simple.*;
 
 public class TestGen {
 	
-	private static final DecimalFormat df = new DecimalFormat("0.00");
+	private static final DecimalFormat df = new DecimalFormat("0.000");
 	
 	private float btLow = 1;				// burst time low/high
 	private float btHigh = 20;

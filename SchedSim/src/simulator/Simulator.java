@@ -44,9 +44,12 @@ public class Simulator {
 			return;
 		}
 		
-		if (algorithm == "rr") {
+		if (algorithm.matches("rr")) {
 			RR alg = new RR(pcb, quantum);
 			alg.run();
+			alg.averageTime();
+			alg.resultTable();
+			
 		} else if(algorithm == "fcfs") {
 			// FCFS alg = new FCFS(pcb);
 			// alg.run();
@@ -64,9 +67,9 @@ public class Simulator {
 		
 		System.out.println("Specify Algorithm (FCFS, RR): ");
 		res[1] = userIn.getLine();
-		res[1] = res[1].replaceAll("\\s", "").toLowerCase();
+		res[1] = res[1].toLowerCase();
 		
-		if (res[1] == "rr") {
+		if (res[1].matches("rr")) {
 			System.out.println("Specify Quantum: ");
 			res[2] = userIn.getLine();
 		} else {

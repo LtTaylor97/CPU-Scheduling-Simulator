@@ -19,7 +19,7 @@ public class RR extends Scheduler {
 		
 		while(running){												// could do it other (more complicated) ways but.. why not?
 			
-			if (this.pcb[count] != null) {
+			if (count < pcb.length) {
 				PCB checkPCB = this.pcb[count]; 					// the PCB we're checking on
 				
 				if(checkPCB.getArrivalTime() <= this.timeLine) { 	// only add to queue if arrival time is reached or passed.
@@ -50,8 +50,6 @@ public class RR extends Scheduler {
 				this.timeLine = this.timeLine + pcbBTL;
 				pcbBTL = 0;
 				curPCB.setEndTime(this.timeLine);
-				curPCB.setTurnaroundTime(this.timeLine - curPCB.getBeginTime());			
-				curPCB.setWaitTime(curPCB.getTurnaroundTime() - curPCB.getBurstTime());	// calc wait & turnaround time if we're done with the process
 			}
 			
 			curPCB.setRemainingTime(pcbBTL);
@@ -61,4 +59,7 @@ public class RR extends Scheduler {
 			}
 		}
 	}
+	
+	// TODO: Print stuff out as we go too.
+	
 }
