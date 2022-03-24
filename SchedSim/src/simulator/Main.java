@@ -4,17 +4,23 @@ public class Main{
 	
 	public static void main(String[] args) {
 		
-		int taskType = getTask(); // 0 to quit, 1 is test generation, 2 is running tests through sim.
+		boolean running = true;
 		
-		if(taskType == 0) {
-			return;
-		} else if(taskType == 1) {
-			TestGen test = new TestGen();
-			test.run();
-		} else {
-			Simulator simRun = new Simulator();
-			simRun.runSim();
+		while(running) {							// Simple while loop so you don't need to restart every time.
+			int taskType = getTask(); 				// 0 to quit, 1 is test generation, 2 is running tests through sim.
+			if(taskType == 0) {
+				running = false;
+			} else if(taskType == 1) {
+				TestGen test = new TestGen();
+				test.run();
+			} else {
+				Simulator simRun = new Simulator();
+				simRun.runSim();
+			}
 		}
+		
+		InputScanner inScan = new InputScanner(); 	// Make sure the scanner closes properly before exiting the program
+		inScan.close();
 	}
 	
 	public static int getTask() {

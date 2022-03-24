@@ -77,7 +77,7 @@ public class TestGen {
 		}
 		
 		out.put("Process Titles", titles);
-		out.put("Burst Time", burstTimes);
+		out.put("Burst Times", burstTimes);
 		out.put("Arrival Times", arrivalTimes);
 		
 		try {

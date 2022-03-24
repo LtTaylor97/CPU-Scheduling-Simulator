@@ -1,11 +1,14 @@
 package simulator;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Scanner;
+
+import org.json.simple.*;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Simulator {
 	
@@ -51,13 +54,13 @@ public class Simulator {
 		// TODO: stuff with PCB data after run
 	}
 	
-	public static String[] readSimInput() {
+	public String[] readSimInput() {
 		String[] res = new String[3];
 		
 		InputScanner userIn = new InputScanner();
 		
-		System.out.println("Specify Dataset Filename: ");
-		res[0] = userIn.getLine();
+		System.out.println("Specify Test Set Filepath + Name: ");
+		res[0] = System.getProperty("user.dir") + "/" + userIn.getLine();
 		
 		System.out.println("Specify Algorithm (FCFS, RR): ");
 		res[1] = userIn.getLine();
@@ -73,22 +76,52 @@ public class Simulator {
 		return res;
 	}
 	
-	public static PCB[] readSimValues(String path) throws IOException // TODO: Update to JSON Simple. This would be simpler to format plain in .txt by spacing and lines but eh.
+	private PCB[] readSimValues(String path) throws IOException
     {
-		long lines = 0;
-		lines = Files.lines(Paths.get(path)).count();
 		
-        PCB[] pcbArray = new PCB[(int) lines];//new ArrayList<Integer>();
-        File srcFile = new File(path);
-        Scanner srcReader = new Scanner(srcFile);
-        
-        int count = 0;
-        while (srcReader.hasNextLine()){
-        	pcbArray[count] = new PCB( srcReader.next(), srcReader.nextFloat(), srcReader.nextFloat()); // name, burst, arrival
-        	count++;
-        }
-        
-        srcReader.close();
-        return pcbArray;
+		
+		File f = new File(path);
+		
+		if (f.isDirectory()) {
+			
+		} else {
+			JSONObject testSet;
+			JSONParser jsonParser = new JSONParser();
+			
+			try (FileReader reader = new FileReader(path)) {
+				Object obj = jsonParser.parse(reader);
+				testSet = (JSONObject) obj;
+				return parseTestSet(testSet);
+				
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+	            e.printStackTrace();
+	        } catch (ParseException e) {
+	            e.printStackTrace();
+	        }
+		}
+		
+		return new PCB[1]; // placeholder so it stops erroring.
     }
+	
+	private PCB[] parseTestSet(JSONObject set) {
+		
+		JSONArray pTitles = (JSONArray) set.get("Process Titles");
+		JSONArray pBTimes = (JSONArray) set.get("Burst Times");
+		JSONArray pATimes = (JSONArray) set.get("Arrival Times");
+		int length = pTitles.size();
+		PCB[] pcbArray = new PCB[length];
+		
+		if(length < 1) {
+			System.out.println("File is Empty?");
+			return pcbArray;
+		} else {
+			for (int i = 0; i < length; i++) {
+				pcbArray[i] = new PCB((String) pTitles.get(i), Float.parseFloat((String) pBTimes.get(i)), Float.parseFloat((String) pATimes.get(i)));
+			}
+		}
+		
+		return pcbArray;
+	}
 }

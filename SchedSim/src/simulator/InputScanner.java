@@ -12,4 +12,8 @@ public class InputScanner {
 	public int getInt() {
 		return Integer.parseInt(userIn.nextLine());
 	}
+	
+	public void close() {
+		userIn.close();
+	}
 }
