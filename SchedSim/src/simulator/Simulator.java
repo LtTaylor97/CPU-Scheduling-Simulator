@@ -54,12 +54,11 @@ public class Simulator {
 			// FCFS alg = new FCFS(pcb);
 			// alg.run();
 		}
-		// TODO: stuff with PCB data after run
+		// TODO: save results to a file(s?) after completing test(s)
 	}
 	
 	public String[] readSimInput() {
 		String[] res = new String[3];
-		
 		InputScanner userIn = new InputScanner();
 		
 		System.out.println("Specify Test Set Filepath + Name: ");
@@ -80,36 +79,27 @@ public class Simulator {
 	}
 	
 	private PCB[] readSimValues(String path) throws IOException
-    {
-		
-		
-		File f = new File(path);
-		
-		if (f.isDirectory()) {
+    {	
+		JSONObject testSet;
+		JSONParser jsonParser = new JSONParser();
 			
-		} else {
-			JSONObject testSet;
-			JSONParser jsonParser = new JSONParser();
+		try (FileReader reader = new FileReader(path)) {
+			Object obj = jsonParser.parse(reader);
+			testSet = (JSONObject) obj;
+			return parseTestSet(testSet);
 			
-			try (FileReader reader = new FileReader(path)) {
-				Object obj = jsonParser.parse(reader);
-				testSet = (JSONObject) obj;
-				return parseTestSet(testSet);
-				
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-	            e.printStackTrace();
-	        } catch (ParseException e) {
-	            e.printStackTrace();
-	        }
-		}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+            e.printStackTrace();
+	    } catch (ParseException e) {
+	        e.printStackTrace();
+	    }
 		
-		return new PCB[1]; // placeholder so it stops erroring.
+		return null;	// Shouldn't ever return this.
     }
 	
 	private PCB[] parseTestSet(JSONObject set) {
-		
 		JSONArray pTitles = (JSONArray) set.get("Process Titles");
 		JSONArray pBTimes = (JSONArray) set.get("Burst Times");
 		JSONArray pATimes = (JSONArray) set.get("Arrival Times");

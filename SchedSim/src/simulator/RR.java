@@ -15,7 +15,10 @@ public class RR extends Scheduler {
 		this.sortPCB();
 		Queue<PCB> readyQueue = new LinkedList<>();
 		int count = 0;
+		int exitIndex = 0;
 		boolean running = true;
+		boolean preemption = false;
+		
 		
 		while(running){												// could do it other (more complicated) ways but.. why not?
 			
@@ -38,6 +41,12 @@ public class RR extends Scheduler {
 			PCB curPCB = readyQueue.remove(); 					// current PCB from queue
 			float pcbBTL = curPCB.getRemainingTime();
 			
+			if(preemption) {
+				preemption = false;
+				int enterIndex = Arrays.asList(this.pcb).indexOf(curPCB);
+				preemptionTable(exitIndex, enterIndex, this.timeLine);
+			}
+			
 			if(curPCB.getBurstTime() == curPCB.getRemainingTime()){
 				curPCB.setBeginTime(this.timeLine);
 				curPCB.setWaitTime(pcbBTL);
@@ -46,6 +55,8 @@ public class RR extends Scheduler {
 			if (pcbBTL > quantum) {
 				pcbBTL = pcbBTL - quantum;
 				this.timeLine = this.timeLine + quantum;
+				preemption = true;
+				exitIndex = Arrays.asList(this.pcb).indexOf(curPCB);
 			} else {
 				this.timeLine = this.timeLine + pcbBTL;
 				pcbBTL = 0;
@@ -59,7 +70,4 @@ public class RR extends Scheduler {
 			}
 		}
 	}
-	
-	// TODO: Print stuff out as we go too.
-	
 }

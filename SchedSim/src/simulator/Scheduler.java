@@ -81,6 +81,18 @@ public class Scheduler {
 		System.out.println(prnt2);
 	}
 	
+	public void preemptionTable(int i, int j, float time) {     // Prints out details of a preemption occurring.
+		PCB exitPCB = pcb[i];
+		PCB enterPCB = pcb[j];
+		System.out.println("-> Context Change at Time: " + time);
+		System.out.println("---------------------------------------");
+		System.out.println("| Exits            | Enters           |");
+		System.out.println("---------------------------------------");
+		System.out.println("| " + exitPCB.getName() + "              | " + enterPCB.getName() + "              |");
+		System.out.println("---------------------------------------");
+		
+	}
+	
 	/* not using these yet/not sure what to do with them exactly
 	public void normalization() {
 		// ????
