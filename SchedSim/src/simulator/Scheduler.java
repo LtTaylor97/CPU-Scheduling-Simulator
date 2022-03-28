@@ -9,7 +9,6 @@ public class Scheduler {
 	protected float timeLine = 0;
 	protected float avgExecutionTime;
 	protected float avgWaitTime;
-	protected float normalization; // ???
 	protected PCB[] pcb;
 	private static final DecimalFormat df = new DecimalFormat("00.000");
 	
@@ -58,7 +57,7 @@ public class Scheduler {
 		float totBurst = 0;
 		
 		System.out.println("----------------------------------------------------------------------");
-		System.out.println("| Process | Wait Time | Execution Time | Arrival Time | Burst Time |");
+		System.out.println("| Process | Wait Time | Turnaround Time | Arrival Time | Burst Time |"); // Wait, Turnaround, Arrival, Burst, Completion Time, Response Time
 		System.out.println("----------------------------------------------------------------------");
 		
 		for(int i = 0; i < this.pcb.length; i++) {
@@ -92,16 +91,4 @@ public class Scheduler {
 		System.out.println("---------------------------------------");
 		
 	}
-	
-	/* not using these yet/not sure what to do with them exactly
-	public void normalization() {
-		// ????
-	}
-	
-	
-	
-	public void preemptionTable(int i, int j, float time) {
-		// Prints out details of (a) preemption(s?) occurring.
-	}
-	*/
 }

@@ -1,0 +1,1 @@
+{"Burst Times":["15", "2", "14", "10", "2"],"Process Titles":["P1","P2","P3", "P4", "P5"],"Test Name":"Test1.txt","Arrival Times":["0","2","3","6","10"]}
