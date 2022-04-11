@@ -59,6 +59,9 @@ public class RR extends Scheduler {
 				readyQueue.add(curPCB);
 			}
 		}
+		
+		this.averageTime();
+		this.resultTable();
 	}
 	
 	private void checkATimes(boolean atStart) {							// moved into its own function to account for timeline shift mid-loop.
@@ -67,7 +70,7 @@ public class RR extends Scheduler {
 			for(int i = this.count; i < this.pcb.length; i++) {
 				PCB checkPCB = this.pcb[i]; 							// the PCB we're checking on
 				
-				if(checkPCB.getArrivalTime() <= this.timeLine) { 		// only add to queue if arrival time is reached or passed.
+				if(checkPCB.getRemainingTime() > 0 && checkPCB.getArrivalTime() <= this.timeLine) { 		// only add to queue if arrival time is reached or passed.
 					this.readyQueue.add(checkPCB);
 					this.count++;
 				} else if(this.readyQueue.isEmpty() && atStart) { 		// Advance time if queue is empty

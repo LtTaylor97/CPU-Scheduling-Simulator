@@ -12,7 +12,7 @@ import org.json.simple.parser.ParseException;
 
 public class Simulator {
 	
-	private static String[] allowedAlgs = {"rr", "fcfs"};
+	private static String[] allowedAlgs = {"rr", "fcfs", "sjf"};
 	
 	public void runSim() {
 		String[] inputResults = readSimInput();
@@ -47,14 +47,17 @@ public class Simulator {
 		if (algorithm.matches("rr")) {
 			RR alg = new RR(pcb, quantum);
 			alg.run();
-			alg.averageTime();
-			alg.resultTable();
 			
-		} else if(algorithm == "fcfs") {
-			// FCFS alg = new FCFS(pcb);
-			// alg.run();
+		} else if(algorithm.matches("fcfs")) {
+			FCFS alg = new FCFS(pcb);
+			alg.run();
+			
+		} else if(algorithm.matches("sjf")) {
+			SJF alg = new SJF(pcb);
+			alg.run();
+			
 		}
-		// TODO: save results to a file(s?) after completing test(s)
+		// TODO: save results to a file after completing test(s)? Maybe...
 	}
 	
 	public String[] readSimInput() {
@@ -64,7 +67,7 @@ public class Simulator {
 		System.out.println("Specify Test Set Filepath + Name: ");
 		res[0] = System.getProperty("user.dir") + "/" + userIn.getLine();
 		
-		System.out.println("Specify Algorithm (FCFS, RR): ");
+		System.out.println("Specify Algorithm (FCFS, RR, SJF): ");
 		res[1] = userIn.getLine();
 		res[1] = res[1].toLowerCase();
 		
