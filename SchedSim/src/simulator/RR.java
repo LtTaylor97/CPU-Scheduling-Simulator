@@ -38,6 +38,8 @@ public class RR extends Scheduler {
 				contextChangeTable(exitIndex, enterIndex, this.timeLine, false);
 			}
 			
+			exitIndex = enterIndex;
+			
 			if(curPCB.getBurstTime() == curPCB.getRemainingTime()){
 				curPCB.setBeginTime(this.timeLine);
 			}
@@ -51,7 +53,6 @@ public class RR extends Scheduler {
 				curPCB.setCompletionTime(this.timeLine);
 			}
 			
-			exitIndex = Arrays.asList(this.pcb).indexOf(curPCB);
 			curPCB.setRemainingTime(pcbBTL);
 			checkATimes(false);										// false for being located here - not at start
 			

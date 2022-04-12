@@ -12,7 +12,7 @@ import org.json.simple.parser.ParseException;
 
 public class Simulator {
 	
-	private static String[] allowedAlgs = {"rr", "fcfs", "sjf"};
+	private static String[] allowedAlgs = {"rr", "fcfs", "sjf", "srtn"};
 	
 	public void runSim() {
 		String[] inputResults = readSimInput();
@@ -22,11 +22,13 @@ public class Simulator {
 		File f = new File(fileName);
 		
 		while(!f.exists() || f.isDirectory() || !Arrays.asList(allowedAlgs).contains(algorithm)) { // handles bad input
+			
 			if(!f.exists() || f.isDirectory()) {
 				System.out.println("Bad Filepath");
 			} else if(!Arrays.asList(allowedAlgs).contains(algorithm)) {
 				System.out.println("Invalid Algorithm");
 			}
+			
 			System.out.println("Please Retry Inputs");
 			inputResults = readSimInput();
 			fileName = inputResults[0];
@@ -56,6 +58,9 @@ public class Simulator {
 			SJF alg = new SJF(pcb);
 			alg.run();
 			
+		} else if(algorithm.matches("srtn")) {
+			SRTN alg = new SRTN(pcb);
+			alg.run();
 		}
 		// TODO: save results to a file after completing test(s)? Maybe...
 	}
@@ -67,7 +72,7 @@ public class Simulator {
 		System.out.println("Specify Test Set Filepath + Name: ");
 		res[0] = System.getProperty("user.dir") + "/" + userIn.getLine();
 		
-		System.out.println("Specify Algorithm (FCFS, RR, SJF): ");
+		System.out.println("Specify Algorithm (FCFS, RR, SJF, SRTN): ");
 		res[1] = userIn.getLine();
 		res[1] = res[1].toLowerCase();
 		

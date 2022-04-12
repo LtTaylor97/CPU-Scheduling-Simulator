@@ -3,24 +3,25 @@ package simulator;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-public class SJF extends Scheduler {
+public class SRTN extends Scheduler {
 	
 	private int count;
 	private LinkedList<PCB> readyQueue = new LinkedList<>();
 	
-	public SJF(PCB[] pcb) {
+	public SRTN(PCB[] pcb) {
 		super(pcb);
 		this.count = 0;
 	}
 	
 	public void run() {
+		
 		this.sortPCB();
 		boolean running = true;
 		int exitIndex = 0;
 		
 		while(running){												// could do it other (more complicated) ways but.. why not?
 			
-			checkATimes(true);										// true for being located here in the loop - at start
+			checkATimes(true);
 			
 			if(this.readyQueue.isEmpty()) {
 				contextChangeTable(exitIndex, exitIndex, this.timeLine, true);
@@ -28,21 +29,19 @@ public class SJF extends Scheduler {
 				break;
 			}
 			
-			float shortestTime = 0f;
 			PCB curPCB = null;
+			float shortestTimeLeft = 0;
 			
 			for(PCB checkPCB : readyQueue) {
+				float rTime = checkPCB.getRemainingTime();
 				
-				float bTime = checkPCB.getBurstTime();
-				
-				if (shortestTime == 0f || bTime < shortestTime) {
-					shortestTime = bTime;
+				if(shortestTimeLeft == 0 || rTime < shortestTimeLeft) {
+					shortestTimeLeft = rTime;
 					curPCB = checkPCB;
 				}
 			}
 			
-			curPCB.setBeginTime(this.timeLine);
-			int enterIndex = Arrays.asList(this.pcb).indexOf(curPCB);
+			int enterIndex = Arrays.asList(this.pcb).indexOf(curPCB);	// Determine whether context change is occuring w/ this index
 			
 			if(exitIndex != enterIndex){
 				contextChangeTable(exitIndex, enterIndex, this.timeLine, false);
@@ -50,18 +49,53 @@ public class SJF extends Scheduler {
 			
 			exitIndex = enterIndex;
 			
+			float rTime = curPCB.getRemainingTime();
+			float nextArrival = nextAT();
+			float totTime = rTime + this.timeLine;
 			
+			if(curPCB.getBurstTime() == rTime){
+				curPCB.setBeginTime(this.timeLine);
+			}
 			
-			this.timeLine = this.timeLine + curPCB.getBurstTime();
-			curPCB.setRemainingTime(0);
-			curPCB.setCompletionTime(this.timeLine);
-			readyQueue.remove(curPCB);
+			if(nextArrival > 0) {
+				if(totTime > nextArrival ) {
+					curPCB.setRemainingTime(rTime - (nextArrival - this.timeLine));
+					this.timeLine = nextArrival;
+				} else {
+					this.timeLine = this.timeLine + rTime;
+					curPCB.setRemainingTime(0);
+					curPCB.setCompletionTime(this.timeLine);
+					readyQueue.remove(curPCB);
+				}
+			} else {
+				this.timeLine = this.timeLine + rTime;
+				curPCB.setRemainingTime(0);
+				curPCB.setCompletionTime(this.timeLine);
+				readyQueue.remove(curPCB);
+			}
 		}
 		
 		this.averageTime();
 		this.resultTable();
 	}
 	
+	
+	private float nextAT() {
+		float nextAT = 0f;
+		
+		for(int i = this.count; i < this.pcb.length; i++) {
+			PCB checkPCB = this.pcb[i];
+			float aTime = checkPCB.getArrivalTime();
+			
+			if(nextAT == 0 && aTime > this.timeLine) {
+				nextAT = aTime;
+			} else if (aTime > this.timeLine && aTime < nextAT ) {
+				nextAT = aTime;
+			}
+		}
+		
+		return nextAT;
+	}
 	
 	private void checkATimes(boolean atStart) {
 		if (count < this.pcb.length) {
