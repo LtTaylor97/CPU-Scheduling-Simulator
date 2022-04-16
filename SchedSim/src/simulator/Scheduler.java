@@ -101,7 +101,7 @@ public class Scheduler {
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		System.out.println("| Averages                            |  " + avgWT + "   |     " + avgTT + "      |     " + avgCT + "      |    " + avgRT + "     |"); 		// print averages
 		System.out.println("-------------------------------------------------------------------------------------------------------");
-		System.out.println("| Total Burst Time       |  " + this.totBurst + "                                                                      |");			// total burst time - semi-useful?
+		System.out.println("| Total Burst Time       |  " + this.totBurst + " |           Total Process Count |  " + this.pcb.length + "                                                |");			// total burst time - semi-useful?
 		System.out.println("-------------------------------------------------------------------------------------------------------");
 	}
 	

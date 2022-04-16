@@ -15,27 +15,23 @@ public class TestGen {
 	private static final DecimalFormat df = new DecimalFormat("0.000");
 	
 	private float btLow = 1;				// burst time low/high
-	private float btHigh = 20;
+	private float btHigh = 10;
 	private float atLow = 0;				// arrival time low/high
-	private float atHigh = 30;
-	
-	private static FileWriter file;
-	
-	// TODO: (1) Priority system; (2) Generate multiple tests
-	
-	private int procCount;
+	private float atHigh = 1000;
+	private int numTests = 1;
+	private int numTestsMade = 0;
+	private int procCountLow;
+	private int procCountHigh;
 	private String fldName;
 	private String fileName;
+	private static FileWriter file;
 	
 	public TestGen() {
-		this.procCount = 0;
+		this.procCountLow = 0;
+		this.procCountHigh = 0;
 		this.fldName = "Tests";
 		this.fileName = "Test";
 	}
-	
-	public int getProcCount() { return this.procCount; }
-	public String getFldName() { return this.fldName; }
-	public String getFileName() { return this.fileName; }
 	
 	public void run() {
 		readTestInput();
@@ -45,9 +41,6 @@ public class TestGen {
 	public void readTestInput() {
 		InputScanner userIn = new InputScanner();
 		
-		System.out.println("Specify Process Count: ");
-		this.procCount = userIn.getInt();
-		
 		System.out.println("Specify Folder Name: ");
 		this.fldName = userIn.getLine();
 		this.fldName = fldName.replaceAll("\\s", "");
@@ -55,50 +48,70 @@ public class TestGen {
 		System.out.println("Specify Filename: ");
 		this.fileName = userIn.getLine();
 		this.fileName = this.fileName.replaceAll("\\s", "");
+		
+		System.out.println("Specify Number of Tests: ");
+		this.numTests = userIn.getInt();
+		
+		if(this.numTests == 1) {
+			System.out.println("Specify Process Count: ");
+			this.procCountLow = userIn.getInt();
+			this.procCountHigh = this.procCountLow;
+			
+		} else if(this.numTests > 1) {
+			System.out.println("Specify Process Count Min: ");
+			this.procCountLow = userIn.getInt();
+			
+			System.out.println("Specify Process Count Max: ");
+			this.procCountHigh = userIn.getInt();
+		}
 	}
 	
-	@SuppressWarnings("unchecked") // JSON Simple is throwing errors I have no way to fix personally without modifying it.
+	@SuppressWarnings("unchecked") // JSON Simple is throwing warnings I have no way to fix personally without modifying it. Works fine anyway.
 	public void generateTest() {
-		JSONObject out = new JSONObject();
-		JSONArray titles = new JSONArray();
-		JSONArray burstTimes = new JSONArray();
-		JSONArray arrivalTimes = new JSONArray();
-		
-		out.put("Test Name", this.fileName);
-		
-		for(int i = 0; i < this.procCount; i++) {
-			String pTitle = "P" + (i + 1);
-			float btVal = ThreadLocalRandom.current().nextFloat(this.btLow, this.btHigh);
-			float atVal = ThreadLocalRandom.current().nextFloat(this.atLow, this.atHigh);
+		while(numTestsMade < numTests) {
+			JSONObject out = new JSONObject();
+			JSONArray titles = new JSONArray();
+			JSONArray burstTimes = new JSONArray();
+			JSONArray arrivalTimes = new JSONArray();
+			int procCount = ThreadLocalRandom.current().nextInt(this.procCountLow, this.procCountHigh);
 			
-			titles.add(pTitle);
-			burstTimes.add(df.format(btVal));
-			arrivalTimes.add(df.format(atVal));
-		}
-		
-		out.put("Process Titles", titles);
-		out.put("Burst Times", burstTimes);
-		out.put("Arrival Times", arrivalTimes);
-		
-		try {
-			Path path = Paths.get(System.getProperty("user.dir") + "/" + this.fldName + "/");
-			Files.createDirectories(path);
-			file = new FileWriter(System.getProperty("user.dir") + "/" + this.fldName + "/" + this.fileName);
-			file.write(out.toJSONString());
+			out.put("Test Name", this.fileName);
 			
-		} catch(IOException exc) {
-			exc.printStackTrace();
-			System.out.println("Test Gen Failed: IOEXC, bad path?");
-			
-		} finally {
-			try {
-				file.flush();
-				file.close();
+			for(int i = 0; i < procCount; i++) {
+				String pTitle = "P" + (i + 1);
+				float btVal = ThreadLocalRandom.current().nextFloat(this.btLow, this.btHigh);
+				float atVal = ThreadLocalRandom.current().nextFloat(this.atLow, this.atHigh);
 				
-			} catch (IOException exc) {
-				exc.printStackTrace();
-				
+				titles.add(pTitle);
+				burstTimes.add(df.format(btVal));
+				arrivalTimes.add(df.format(atVal));
 			}
+			
+			out.put("Process Titles", titles);
+			out.put("Burst Times", burstTimes);
+			out.put("Arrival Times", arrivalTimes);
+			
+			try {
+				Path path = Paths.get(System.getProperty("user.dir") + "/" + this.fldName + "/");
+				Files.createDirectories(path);
+				file = new FileWriter(System.getProperty("user.dir") + "/" + this.fldName + "/" + this.fileName + "_" + numTestsMade + ".txt");
+				file.write(out.toJSONString());
+				
+			} catch(IOException exc) {
+				exc.printStackTrace();
+				System.out.println("Test Gen Failed: IOEXC, bad path?");
+				
+			} finally {
+				try {
+					file.flush();
+					file.close();
+					
+				} catch (IOException exc) {
+					exc.printStackTrace();
+					
+				}
+			}
+			numTestsMade++;
 		}
 	}
 }
