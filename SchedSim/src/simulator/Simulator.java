@@ -13,64 +13,107 @@ import org.json.simple.parser.ParseException;
 public class Simulator {
 	
 	private static String[] allowedAlgs = {"rr", "fcfs", "sjf", "srtn"};
+	protected String algorithm;
+	protected int quantum;
+	protected int testCount;
+	protected OutputWriter writer;
 	
 	public void runSim() {
 		String[] inputResults = readSimInput();
-		String fileName = inputResults[0];
-		String algorithm = inputResults[1];
-		float quantum = Float.parseFloat(inputResults[2]);
-		File f = new File(fileName);
+		String filePath = inputResults[0];
+		this.algorithm = inputResults[1];
+		this.quantum = Integer.valueOf(inputResults[2]);
+		File f = new File(filePath);
 		
-		while(!f.exists() || f.isDirectory() || !Arrays.asList(allowedAlgs).contains(algorithm)) { // handles bad input
+		while((!f.exists() && !f.isDirectory()) || !Arrays.asList(allowedAlgs).contains(this.algorithm)) { // handles bad input
 			
-			if(!f.exists() || f.isDirectory()) {
+			if(!f.exists()) {
 				System.out.println("Bad Filepath");
-			} else if(!Arrays.asList(allowedAlgs).contains(algorithm)) {
+			} else if(!Arrays.asList(allowedAlgs).contains(this.algorithm)) {
 				System.out.println("Invalid Algorithm");
 			}
 			
 			System.out.println("Please Retry Inputs");
 			inputResults = readSimInput();
-			fileName = inputResults[0];
-			algorithm = inputResults[1];
-			quantum = Float.parseFloat(inputResults[2]);
-			f = new File(fileName);
+			filePath = inputResults[0];
+			this.algorithm = inputResults[1];
+			this.quantum = Integer.parseInt(inputResults[2]);
+			f = new File(filePath);
 		}
 		
+		if (f.isDirectory()) {
+			File[] listFiles = f.listFiles();
+			this.testCount = listFiles.length;
+			this.writer = new OutputWriter(this.testCount, this.algorithm);
+			this.writer.setDirectory(filePath);
+			for(int i = 0; i < this.testCount; i++) {
+				File passFile = listFiles[i];
+				
+				if (!passFile.isDirectory()) {
+					if(i != listFiles.length - 1) {
+						runAlg(passFile.getPath(), true, passFile.getName(), false);
+					} else {
+						runAlg(passFile.getPath(), true, passFile.getName(), true);
+					}
+				}
+			}
+		} else {
+			runAlg(filePath, false, f.getName(), false);
+		}
+	}
+	
+	public void runAlg(String filePath, boolean isBatch, String fileName, boolean last) {
 		PCB[] pcb;
 		
 		try {
-			pcb = readSimValues(fileName);
+			pcb = readSimValues(filePath);
 		} catch (IOException exc) {
 			System.out.println("Fatal File Error");
 			return;
 		}
 		
-		if (algorithm.matches("rr")) {
-			RR alg = new RR(pcb, quantum);
+		if (this.algorithm.matches("rr")) {
+			RR alg = new RR(pcb, this.quantum, fileName, isBatch, writer);
 			alg.run();
-			
-		} else if(algorithm.matches("fcfs")) {
-			FCFS alg = new FCFS(pcb);
+			if (last == true) {
+				writer.writeToFile();
+			}
+		} else if(this.algorithm.matches("fcfs")) {
+			FCFS alg = new FCFS(pcb, fileName, isBatch, writer);
 			alg.run();
-			
-		} else if(algorithm.matches("sjf")) {
-			SJF alg = new SJF(pcb);
+			if (last) {
+				writer.writeToFile();
+			}
+		} else if(this.algorithm.matches("sjf")) {
+			SJF alg = new SJF(pcb, fileName, isBatch, writer);
 			alg.run();
-			
-		} else if(algorithm.matches("srtn")) {
-			SRTN alg = new SRTN(pcb);
+			if (last) {
+				writer.writeToFile();
+			}
+		} else if(this.algorithm.matches("srtn")) {
+			SRTN alg = new SRTN(pcb, fileName, isBatch, writer);
 			alg.run();
+			if (last) {
+				writer.writeToFile();
+			}
 		}
-		// TODO: save results to a file after completing test(s)? Maybe...
 	}
 	
 	public String[] readSimInput() {
 		String[] res = new String[3];
 		InputScanner userIn = new InputScanner();
 		
-		System.out.println("Specify Test Set Filepath + Name: ");
-		res[0] = System.getProperty("user.dir") + "/" + userIn.getLine();
+		System.out.println("Specify Test Set Directory: ");
+		String filePath = System.getProperty("user.dir") + "/" + userIn.getLine();
+		
+		System.out.println("Specify File Name (blank for batch): ");
+		String fileName = userIn.getLine();
+		
+		if(fileName.isBlank()) {
+			res[0] = filePath;
+		} else {
+			res[0] = filePath + "/" + fileName;
+		}
 		
 		System.out.println("Specify Algorithm (FCFS, RR, SJF, SRTN): ");
 		res[1] = userIn.getLine();
@@ -119,7 +162,7 @@ public class Simulator {
 			return pcbArray;
 		} else {
 			for (int i = 0; i < length; i++) {
-				pcbArray[i] = new PCB((String) pTitles.get(i), Float.parseFloat((String) pBTimes.get(i)), Float.parseFloat((String) pATimes.get(i)));
+				pcbArray[i] = new PCB((String) pTitles.get(i), ((Long) pBTimes.get(i)).intValue(), ((Long) pATimes.get(i)).intValue());
 			}
 		}
 		

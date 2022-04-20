@@ -8,8 +8,10 @@ public class SJF extends Scheduler {
 	private int count;
 	private LinkedList<PCB> readyQueue = new LinkedList<>();
 	
-	public SJF(PCB[] pcb) {
-		super(pcb);
+	public SJF(PCB[] pcb, String fileName, boolean isBatch, OutputWriter writer) {
+		super(pcb, writer);
+		this.setFileName(fileName);
+		this.setBatch(isBatch);
 		this.count = 0;
 	}
 	
@@ -18,7 +20,7 @@ public class SJF extends Scheduler {
 		boolean running = true;
 		int exitIndex = 0;
 		
-		while(running){												// could do it other (more complicated) ways but.. why not?
+		while(running){
 			
 			checkATimes(true);										// true for being located here in the loop - at start
 			

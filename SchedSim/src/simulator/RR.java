@@ -4,23 +4,25 @@ import java.util.*;
 
 public class RR extends Scheduler {
 	
-	private float quantum;
+	private int quantum;
 	private int count;
 	private Queue<PCB> readyQueue = new LinkedList<>();
 
-	public RR(PCB[] pcb, float quantum) {
-		super(pcb);
+	public RR(PCB[] pcb, int quantum, String fileName, boolean isBatch, OutputWriter writer) {
+		super(pcb, writer);
+		this.setFileName(fileName);
+		this.setBatch(isBatch);
 		this.quantum = quantum;
 		this.count = 0;
 	}
-	
+
 	public void run() {
 		this.sortPCB();
 		int exitIndex = 0;
 		boolean running = true;
 		
 		
-		while(running){												// could do it other (more complicated) ways but.. why not?
+		while(running){
 			
 			checkATimes(true);										// true for being located here in the loop - at start
 			
@@ -31,7 +33,7 @@ public class RR extends Scheduler {
 			}
 			
 			PCB curPCB = readyQueue.remove(); 							// current PCB from queue
-			float pcbBTL = curPCB.getRemainingTime();					// Remaining Burst Time
+			int pcbBTL = curPCB.getRemainingTime();					// Remaining Burst Time
 			int enterIndex = Arrays.asList(this.pcb).indexOf(curPCB);	// Determine whether context change is occuring w/ this index
 			
 			if(exitIndex != enterIndex){

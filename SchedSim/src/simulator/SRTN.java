@@ -8,8 +8,10 @@ public class SRTN extends Scheduler {
 	private int count;
 	private LinkedList<PCB> readyQueue = new LinkedList<>();
 	
-	public SRTN(PCB[] pcb) {
-		super(pcb);
+	public SRTN(PCB[] pcb, String fileName, boolean isBatch, OutputWriter writer) {
+		super(pcb, writer);
+		this.setFileName(fileName);
+		this.setBatch(isBatch);
 		this.count = 0;
 	}
 	
@@ -19,7 +21,7 @@ public class SRTN extends Scheduler {
 		boolean running = true;
 		int exitIndex = 0;
 		
-		while(running){												// could do it other (more complicated) ways but.. why not?
+		while(running){
 			
 			checkATimes(true);
 			
@@ -49,9 +51,9 @@ public class SRTN extends Scheduler {
 			
 			exitIndex = enterIndex;
 			
-			float rTime = curPCB.getRemainingTime();
-			float nextArrival = nextAT();
-			float totTime = rTime + this.timeLine;
+			int rTime = curPCB.getRemainingTime();
+			int nextArrival = nextAT();
+			int totTime = rTime + this.timeLine;
 			
 			if(curPCB.getBurstTime() == rTime){
 				curPCB.setBeginTime(this.timeLine);
@@ -80,12 +82,12 @@ public class SRTN extends Scheduler {
 	}
 	
 	
-	private float nextAT() {
-		float nextAT = 0f;
+	private int nextAT() {
+		int nextAT = 0;
 		
 		for(int i = this.count; i < this.pcb.length; i++) {
 			PCB checkPCB = this.pcb[i];
-			float aTime = checkPCB.getArrivalTime();
+			int aTime = checkPCB.getArrivalTime();
 			
 			if(nextAT == 0 && aTime > this.timeLine) {
 				nextAT = aTime;

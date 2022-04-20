@@ -1,24 +1,29 @@
 package simulator;
 
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Comparator;
 
 public class Scheduler {
 	protected int nProcess;
-	protected float timeLine = 0;
-	protected float avgTurnTime;
-	protected float avgWaitTime;
-	protected float avgResTime;
+	protected int timeLine = 0;
+	protected int avgTurnTime;
+	protected int avgWaitTime;
+	protected int avgResTime;
 	protected float totBurst;
-	protected float avgCompTime;
+	protected int avgCompTime;
+	protected boolean isBatch;
+	protected String fileName;
 	protected PCB[] pcb;
-	private static final DecimalFormat df = new DecimalFormat("00.000");
+	protected OutputWriter writer;
+	public void setBatch(boolean isBatch) {this.isBatch = isBatch;}
+	public void setFileName(String fileName) {this.fileName = fileName;}
 	
-	public Scheduler(PCB[] pcb) {
+	public Scheduler(PCB[] pcb, OutputWriter writer) {
 		this.pcb = pcb;
 		this.nProcess = pcb.length; // ??? is this right?
 		this.totBurst = 0;
+		this.isBatch = false;
+		this.writer = writer;
 	}
 	
 	public void sortPCB() {
@@ -46,13 +51,13 @@ public class Scheduler {
 		
 		for(int i = 0; i < length; i++) {
 			PCB curPCB = this.pcb[i];
-			float turnTime = curPCB.getCompletionTime() - curPCB.getArrivalTime();
+			int turnTime = curPCB.getCompletionTime() - curPCB.getArrivalTime();
 			totTurnTime += turnTime;
 			
-			float waitTime = turnTime - curPCB.getBurstTime();
+			int waitTime = turnTime - curPCB.getBurstTime();
 			totWaitTime += waitTime;
 			
-			float resTime = curPCB.getArrivalTime() - curPCB.getBeginTime();
+			int resTime = curPCB.getArrivalTime() - curPCB.getBeginTime();
 			totResTime += resTime;
 			
 			this.totBurst += curPCB.getBurstTime();
@@ -63,70 +68,84 @@ public class Scheduler {
 			curPCB.setResponseTime(resTime);
 		}
 		
-		this.avgCompTime = totCompTime / length;
-		this.avgResTime = totResTime / length;
-		this.avgTurnTime = totTurnTime / length;
-		this.avgWaitTime = totWaitTime / length;
+		this.avgCompTime = Math.abs(Math.round(totCompTime/length));
+		this.avgResTime = Math.abs(Math.round(totResTime/length));
+		this.avgTurnTime = Math.abs(Math.round(totTurnTime/length));
+		this.avgWaitTime = Math.abs(Math.round(totWaitTime/length));
+	}
+	
+	public String strHelper(int val) {
+		return String.valueOf(Math.round(Math.abs(val)));
 	}
 	
 	public void resultTable() { // Prints out the final details of the simulation
 		
-		
-		
-		System.out.println("-------------------------------------------------------------------------------------------------------");
-		System.out.println("| Process | Arrival Time | Burst Time | Wait Time | Turnaround Time | Completion Time | Response Time |");
-		System.out.println("-------------------------------------------------------------------------------------------------------");
-		
-		for(int i = 0; i < this.pcb.length; i++) {
-			PCB curPCB = this.pcb[i];
-			String nm = curPCB.getName();
-			String at = df.format(Math.abs(curPCB.getArrivalTime()));
-			String bt = df.format(Math.abs(curPCB.getBurstTime()));
+		if(!this.isBatch) {
+			System.out.println("-------------------------------------------------------------------------------------------------------");
+			System.out.println("| Process | Arrival Time | Burst Time | Wait Time | Turnaround Time | Completion Time | Response Time |");
+			System.out.println("-------------------------------------------------------------------------------------------------------");
 			
-			String wt = df.format(Math.abs(curPCB.getWaitTime()));			// using abs to avoid the odd negative sign on 0's.
-			String tt = df.format(Math.abs(curPCB.getTurnaroundTime()));
-			String ct = df.format(Math.abs(curPCB.getCompletionTime()));
-			String rt = df.format(Math.abs(curPCB.getResponseTime()));
-			
-			
-			
-			System.out.println("| " + nm + "      |   " + at + "     |  " + bt + "    |  " + wt + "   |     " + tt + "      |     " + ct + "      |    " + rt + "     |" );
+			for(int i = 0; i < this.pcb.length; i++) {
+				PCB curPCB = this.pcb[i];
+				String nm = curPCB.getName();
+				String at = strHelper(curPCB.getArrivalTime());
+				String bt = strHelper(curPCB.getBurstTime());
+				
+				String wt = strHelper(curPCB.getWaitTime());			// using abs to avoid the odd negative sign on 0's.
+				String tt = strHelper(curPCB.getTurnaroundTime());
+				String ct = strHelper(curPCB.getCompletionTime());
+				String rt = strHelper(curPCB.getResponseTime());
+				
+				//System.out.println("| " + nm + "      |   " + at + "     |  " + bt + "    |  " + wt + "   |     " + tt + "      |     " + ct + "      |    " + rt + "     |" );
+				System.out.printf("| %-7s | %-12s | %-10s | %-9s | %-15s | %-15s | %-13s |%n", nm, at, bt, wt, tt, ct, rt);
+			}
+			System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		} else {
+			System.out.println("-------------------------------------------------------------------------------------------------------");
+			System.out.printf( "| %-35s | Wait Time | Turnaround Time | Completion Time | Response Time |\n", this.fileName.replaceAll(".json", ""));
+			System.out.println("-------------------------------------------------------------------------------------------------------");
 		}
-		//avgCompTime
-		String avgWT = df.format(Math.abs(this.avgWaitTime));			// Adding a 0 to a float (sometimes) apparently inverts the float's sign bit because...? What?????
-		String avgTT = df.format(Math.abs(this.avgTurnTime));
-		String avgCT = df.format(Math.abs(this.avgCompTime));
-		String avgRT = df.format(Math.abs(this.avgResTime));
 		
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		System.out.println("| Averages                            |  " + avgWT + "   |     " + avgTT + "      |     " + avgCT + "      |    " + avgRT + "     |"); 		// print averages
+		//avgCompTime
+		String avgWT = String.valueOf(this.avgWaitTime);
+		String avgTT = String.valueOf(this.avgTurnTime);
+		String avgCT = String.valueOf(this.avgCompTime);
+		String avgRT = String.valueOf(this.avgResTime);
+		
+		if (this.isBatch) {
+			writer.outputAdd(this.fileName, avgWT, avgTT, avgCT, avgRT, this.pcb.length);
+		}
+		
+		System.out.printf("| Averages                            | %-9s | %-15s | %-15s | %-13s |%n", avgWT, avgTT, avgCT, avgRT); 		// print averages
 		System.out.println("-------------------------------------------------------------------------------------------------------");
-		System.out.println("| Total Burst Time       |  " + this.totBurst + " |           Total Process Count |  " + this.pcb.length + "                                                |");			// total burst time - semi-useful?
+		System.out.printf("| Total Burst Time:      | %-22s | %-15s | %-31s |%n", Math.round(this.totBurst), "Process Count:", this.pcb.length);
 		System.out.println("-------------------------------------------------------------------------------------------------------");
 	}
 	
-	public void contextChangeTable(int i, int j, float time, boolean complete) {     // Prints out details of a preemption occurring.
-		PCB exitPCB = pcb[i];
-		PCB enterPCB = pcb[j];
+	public void contextChangeTable(int i, int j, int time, boolean complete) {     // Prints out details of a preemption occurring.
 		
-		if(!complete) {
-			System.out.println("-> Context Change at Time: " + time);
-		} else {
-			System.out.println("-> Completion at Time:     " + time);
+		if(!this.isBatch) {
+			PCB exitPCB = pcb[i];
+			PCB enterPCB = pcb[j];
+			
+			if(!complete) {
+				System.out.println("-> Context Change at Time: " + time);
+			} else {
+				System.out.println("-> Completion at Time:     " + time);
+			}
+			System.out.println("---------------------------------------");
+			
+			if(!complete) {
+				System.out.println("| Exits            | Enters           |");
+				System.out.println("---------------------------------------");
+				System.out.printf("| %-16s | %-16s |%n", exitPCB.getName(), enterPCB.getName());
+				System.out.println("---------------------------------------");
+			} else {
+				System.out.println("| Complete                            |");
+				System.out.println("---------------------------------------");
+				System.out.printf("| %-35s |%n", exitPCB.getName());
+				System.out.println("---------------------------------------");
+			}
 		}
-		System.out.println("---------------------------------------");
-		
-		if(!complete) {
-			System.out.println("| Exits            | Enters           |");
-			System.out.println("---------------------------------------");
-			System.out.println("| " + exitPCB.getName() + "               | " + enterPCB.getName() + "               |");
-			System.out.println("---------------------------------------");
-		} else {
-			System.out.println("| Complete                            |");
-			System.out.println("---------------------------------------");
-			System.out.println("| " + exitPCB.getName() + "                                  |");
-			System.out.println("---------------------------------------");
-		}
-		
 	}
 }

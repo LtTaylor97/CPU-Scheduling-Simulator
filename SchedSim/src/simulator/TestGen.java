@@ -5,19 +5,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.json.simple.*;
 
 public class TestGen {
-	
-	private static final DecimalFormat df = new DecimalFormat("0.000");
-	
-	private float btLow = 1;				// burst time low/high
-	private float btHigh = 10;
-	private float atLow = 0;				// arrival time low/high
-	private float atHigh = 1000;
+	private int btLow = 1;				// burst time low/high
+	private int btHigh = 10;
+	private int atLow = 0;				// arrival time low/high
+	private int atHigh = 30;
 	private int numTests = 1;
 	private int numTestsMade = 0;
 	private int procCountLow;
@@ -73,18 +69,30 @@ public class TestGen {
 			JSONArray titles = new JSONArray();
 			JSONArray burstTimes = new JSONArray();
 			JSONArray arrivalTimes = new JSONArray();
-			int procCount = ThreadLocalRandom.current().nextInt(this.procCountLow, this.procCountHigh);
+			int procCount = this.procCountLow;
+			
+			if (this.procCountLow != this.procCountHigh) {
+				procCount = ThreadLocalRandom.current().nextInt(this.procCountLow, this.procCountHigh);
+			}
 			
 			out.put("Test Name", this.fileName);
 			
 			for(int i = 0; i < procCount; i++) {
 				String pTitle = "P" + (i + 1);
-				float btVal = ThreadLocalRandom.current().nextFloat(this.btLow, this.btHigh);
-				float atVal = ThreadLocalRandom.current().nextFloat(this.atLow, this.atHigh);
+				int btVal = this.btLow;
+				int atVal = this.atLow;
+				
+				if (this.btLow != this.btHigh) {
+					btVal = ThreadLocalRandom.current().nextInt(this.btLow, this.btHigh);
+				}
+				
+				if (this.atLow != this.atHigh) {
+					atVal = ThreadLocalRandom.current().nextInt(this.atLow, this.atHigh);
+				}
 				
 				titles.add(pTitle);
-				burstTimes.add(df.format(btVal));
-				arrivalTimes.add(df.format(atVal));
+				burstTimes.add(btVal);
+				arrivalTimes.add(atVal);
 			}
 			
 			out.put("Process Titles", titles);
@@ -94,7 +102,7 @@ public class TestGen {
 			try {
 				Path path = Paths.get(System.getProperty("user.dir") + "/" + this.fldName + "/");
 				Files.createDirectories(path);
-				file = new FileWriter(System.getProperty("user.dir") + "/" + this.fldName + "/" + this.fileName + "_" + numTestsMade + ".txt");
+				file = new FileWriter(System.getProperty("user.dir") + "/" + this.fldName + "/" + this.fileName + "_" + numTestsMade + ".json");
 				file.write(out.toJSONString());
 				
 			} catch(IOException exc) {
